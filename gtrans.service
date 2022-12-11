@@ -1,0 +1,15 @@
+[Unit]
+Description=Google Translate Transport
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+User=gtrans
+Group=gtrans
+Type=simple
+ExecStart=/usr/bin/python2 -u gtrans.py
+WorkingDirectory=/home/gtrans/gtrans
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

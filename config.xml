@@ -1,0 +1,7 @@
+<config>
+	<name>j2j.linuxoid.in</name> <!-- Transport name -->
+	<host>192.168.220.250</host> <!-- Jabber server address -->
+	<port>5555</port> <!-- Jabber server port -->
+	<password>superpassword</password> <!-- Transport password -->
+</config>
+
