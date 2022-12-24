@@ -24,7 +24,7 @@ from pyxmpp.jabber.disco import DiscoItems
 
 import pyxmpp.jabberd.all
 
-programmVersion="1.0"
+programmVersion="1.1"
 
 config=os.path.abspath(os.path.dirname(sys.argv[0]))+'/config.xml'
 
@@ -35,9 +35,17 @@ HOST =  dom.getElementsByTagName("host")[0].childNodes[0].data
 PORT =  dom.getElementsByTagName("port")[0].childNodes[0].data
 PASSWORD = dom.getElementsByTagName("password")[0].childNodes[0].data
 
+# Throttle limits
+TPR =  dom.getElementsByTagName("tpr")[0].childNodes[0].data
+TPD =  dom.getElementsByTagName("tpd")[0].childNodes[0].data
+
 class Component(pyxmpp.jabberd.Component):
     start_time = int(time.time())
+    msgstat = {} # list of requests per JID
+    lastmsg = start_time # last request marker
     name = NAME
+    tpr = int(TPR) # throttle by request per second
+    tpd = int(TPD) # throttle by request per day
     gttlogo = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAFdklEQVR42r2XBWwbWRCGW7FOzMdiDnl3YwxdfWGqw1ymJKKSoMzMzMzc4zIzM3MTwzHu2l7/Nx51Tz6ZtilY+sye+Xf+ee+NO4mi+JFgSJ4sGJLO0+MV4rIOrgiC4Qj9NpHo9EY3CrTGlFniz6qfhi+6zdNH02wYM4tBQgaLgkAxhI4LEEXp7+zmrXDM9sMxy6sTH7IaZgQF7KMKfEC8gYBUE/IGHeKgjpn/EHIc/mEReUOOQzLaPIIhRaDbmwo4+EqArJuSSS6Ys+sgpCQOCgrgKrw3AYxCNkwL2nAiOTm5ICkpKUcnuYTdYDB8bjKZOndQgGbDMbLBGsjKylLy8vKU3NxcXdjtdlmSpOtUOUdUAV1nyCid8Q9Kpv8Hv+5KhNpgstdgwvhxuHLlCi5duqSLc+fOYejQoaAq3IsogJJwsp5LZEzZ68WKwz7M+taLASv4M0azIb12Cvr26YWnT5+ivb1dF263G7t27YLRaAyECdASTNrjxSOXCuevAdxrV/HiZxVtPwew9KAXFbP5e2xD7uCj6JKdh5MnT8DpdKKtrS0e/L09e/aAegBhAkqp1MO3KnD/FsA3l/0YsFJB7TwZvZbKWHvMh0uPVfRYzPZwBUomOmG2V2PRwgUc+OXLlx0WwFdVSVd35r4fJ+76UTVHZu+Lp/2DIiL4vG6+HNYL6TWT0YdsePLkCScgEWGPegRw4D7LZLz8WWXvKTGLmPa1F8sO+bj8QeZ+70XTwhAbBh2BnWw4deokXC4XJ7h8+TKmTJmCO3fu8GvN/1gCuPzNKxX2fdR2hQU0UqLjd/x44FS5F556VPytBDBim8IVCbVhzuxZuHXrFm7evIlt27YhOzsbP/zwA7++fv06c//+/dgWNCyQcZ+SrT/howRcalTPlbn0wcc533nhov5oXa2wYM2GzLopyEi3obS0lKF9AWazGQUFBSgpKUFRUREzcuRItiSKAPYXa6jZ2n8JcDMGXxe/8r9llYK7bSr2X/ejfNYrCwjelAYdhjUtk6owGzt37sT27duZzZs3o6KiAvX19diyZQuOHj0acxVw0Hq62kM3/bwSvqWVsOSAFzvO+vDiJxVXn6rot1xbBTIYtqGdbVi8aCEtyZN4/PgxfvzxRxw5cgS0+7EYj8fDfRBLAMHBeekt2OfFxUcqHrpUXHumYu1xX8gSlMPIqJmI2ppqVFZWYurUqXj06BFaW1vRr18/fh57FYRtxVx2XpZUEV4N5Hnk5NpqGHgI2TkFmDBhAvLz8zFo0CB+3Ldvn7ZH6BWgiWAhIcQ4oNiGNrKhCksWL8LYsWORmJjITfc6O+Ebk149AU2N9ejVqxdsNhvq6upw4cIF/RXoMGyDj2MJkgkV5eXYu3cvunfvzmJu3LjBDUgiIgk49OYCNBsmtMGYVY5ZM2dw1585c4aXYUtLC29S4RWQTIHcgQfgmK1ygDfHSzaMR/OA/nxEUzJe+1VVVVi3bh2//p8AQTDcy6gcgaJRd1E89tGbM+4J7P024svsXLr609DOgGvXruHu3bvhFQiORTSaX0+1ZcvG9HzlNVGN6QUwZhSFUIxUWw6k1FQ+D7QZQTuIIvVAZ6rC50JKkp0m3FwiRyfZgiFpm2QtgqlkDkylC4iFMOaPgkG0YgBZQIdQ/HmgIzdtDBeEZIdo6qJYKrfA2nAElqodEGxV6NmzJ65evap1/RsKiCGC+ISE3DIVToSlejeEtBo01Ieve40wC95cgET2pSyW0qsgZTSipqYG586d5aGTkkSDh5ZVq1ZBkqS/3+A/pahVwSGIokLB0NzcjOnTp/NBFItx48ahsLDQT2P5Gg72ZlUQP6LH3SToKgW8TP+S4nGFOJ+SkjKJfvPRvxq8CCnBwq3aAAAAAElFTkSuQmCC'
 
     LANGUAGES = {
@@ -153,9 +161,20 @@ class Component(pyxmpp.jabberd.Component):
     def trans(self, fr, to, text):
         url = "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=" +fr+ "&tl=" +to+ "&q=" + urllib2.quote(text.encode("utf-8"))
         req = urllib2.Request(url)
-        site = urllib2.urlopen(req)
-        translated_text = loads(site.read())
-        return translated_text[0][0][0]
+        try:
+            site = urllib2.urlopen(req, timeout = 10)
+            site = site.read()
+            if not site:
+                return "Translation error"
+            else:
+                translated = loads(site)
+                translated_text = ''
+                for i in translated[0]:
+                    translated_text += i[0]
+                print("Got answer: " + translated_text.encode("utf-8"))
+                return translated_text
+        except:
+            return "Translation error"
 
     def checklang(self, node):
         regcheck = "(" + "|".join(self.LANGUAGES) + "|auto)2(" + "|".join(self.LANGUAGES) + ")"
@@ -200,6 +219,31 @@ class Component(pyxmpp.jabberd.Component):
         upt.setProp("units", 'seconds')
         upt.setProp("value", str(int(time.time()) - self.start_time))
 
+        ts = time.time()
+        hourly = daily = users = 0
+        for i in self.msgstat:
+            users += 1
+            for j in self.msgstat[i]:
+                if j > ts - 86400:
+                    daily += 1
+                    if j > ts - 3600:
+                        hourly += 1
+
+        reqsh = q.newChild(None, "stat", None)
+        reqsh.setProp("name", 'messages/hourly')
+        reqsh.setProp("units", 'messages')
+        reqsh.setProp("value", str(hourly))
+
+        reqsd = q.newChild(None, "stat", None)
+        reqsd.setProp("name", 'messages/daily')
+        reqsd.setProp("units", 'messages')
+        reqsd.setProp("value", str(daily))
+
+        reqsu = q.newChild(None, "stat", None)
+        reqsu.setProp("name", 'messages/users')
+        reqsu.setProp("units", 'users')
+        reqsu.setProp("value", str(users))
+
         self.stream.send(iq)
         return 1
 
@@ -212,9 +256,39 @@ class Component(pyxmpp.jabberd.Component):
         fromjid = iq.get_from().bare()
         tojid = iq.get_to().bare()
         feedname = iq.get_to().node
-        if self.checklang(feedname) and len(body) < 8192:
-            feedsplit = feedname.split(str(2))
-            self.sendmsg(tojid, fromjid, self.trans(feedsplit[0], feedsplit[1], body))
+        print("Got message from " + str(fromjid) + ": " + body.encode("utf-8"))
+        if fromjid not in self.msgstat:
+            self.msgstat[fromjid] = list()
+
+        fast = False
+        ts = time.time()
+        daily = 0
+
+        for jid in self.msgstat:
+            for stamp in self.msgstat[jid]:
+                if stamp > ts - 86400:
+                    daily += 1
+                else:
+                    self.msgstat[jid].remove(stamp)
+
+        for mt in self.msgstat[fromjid]:
+            if mt > ts - self.tpr and len(self.msgstat[fromjid]) > 0: # 3 seconds beetween messages
+                fast = True
+
+        if fast:
+            self.sendmsg(tojid, fromjid, 'Too fast! Wait a moment...')
+        elif daily > self.tpd:
+            self.sendmsg(tojid, fromjid, 'Daily limit reached, try later')
+        else:
+            self.msgstat[fromjid].append(time.time())
+            if self.checklang(feedname) and len(body) < 8192:
+                feedsplit = feedname.split(str(2))
+                while self.lastmsg > time.time() - self.tpr:
+                    time.sleep(0.1)
+                self.lastmsg = time.time()
+                self.sendmsg(tojid, fromjid, self.trans(feedsplit[0], feedsplit[1], body))
+            else:
+                print("Wrong language or message too long")
 
     def disco_get_items(self, node, iq):
         return self.browseitems(iq, node)
@@ -223,7 +297,7 @@ class Component(pyxmpp.jabberd.Component):
         return self.disco_info
 
     def sendmsg(self, fromjid, tojid, msg):
-        m = Message(to_jid = tojid, from_jid = fromjid, stanza_type='chat', body = msg)
+        m = Message(to_jid = tojid, from_jid = JID(str(fromjid) + "/gtt"), stanza_type = 'chat', body = msg)
         self.stream.send(m)
 
     def browseitems(self, iq=None, node=None):
@@ -254,7 +328,11 @@ class Component(pyxmpp.jabberd.Component):
     def get_last(self, iq):
         iq = iq.make_result_response()
         q = iq.new_query("jabber:iq:last")
-        q.setProp("seconds", str(int(time.time()) - self.start_time))
+#        if iq.get_from() == self.name:
+#            q.setProp("seconds", str(int(time.time()) - self.start_time))
+#        else:
+        print(self.lastmsg)
+        q.setProp("seconds", str(int(time.time() - self.lastmsg)))
         self.stream.send(iq)
         return 1
 

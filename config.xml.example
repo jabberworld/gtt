@@ -3,5 +3,9 @@
 	<host>127.0.0.1</host> <!-- Jabber server address -->
 	<port>5555</port> <!-- Jabber server port -->
 	<password>superpassword</password> <!-- Transport password -->
+
+	<tpr>3</tpr> <!-- messages per second -->
+	<tpd>1000000</tpd> <!-- messages per day -->
+
 </config>
 
