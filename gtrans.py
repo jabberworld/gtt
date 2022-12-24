@@ -24,7 +24,7 @@ from pyxmpp.jabber.disco import DiscoItems
 
 import pyxmpp.jabberd.all
 
-programmVersion="1.1"
+programmVersion="1.2"
 
 config=os.path.abspath(os.path.dirname(sys.argv[0]))+'/config.xml'
 
@@ -46,6 +46,7 @@ class Component(pyxmpp.jabberd.Component):
     name = NAME
     tpr = int(TPR) # throttle by request per second
     tpd = int(TPD) # throttle by request per day
+    jidseen = {}
     gttlogo = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAFdklEQVR42r2XBWwbWRCGW7FOzMdiDnl3YwxdfWGqw1ymJKKSoMzMzMzc4zIzM3MTwzHu2l7/Nx51Tz6ZtilY+sye+Xf+ee+NO4mi+JFgSJ4sGJLO0+MV4rIOrgiC4Qj9NpHo9EY3CrTGlFniz6qfhi+6zdNH02wYM4tBQgaLgkAxhI4LEEXp7+zmrXDM9sMxy6sTH7IaZgQF7KMKfEC8gYBUE/IGHeKgjpn/EHIc/mEReUOOQzLaPIIhRaDbmwo4+EqArJuSSS6Ys+sgpCQOCgrgKrw3AYxCNkwL2nAiOTm5ICkpKUcnuYTdYDB8bjKZOndQgGbDMbLBGsjKylLy8vKU3NxcXdjtdlmSpOtUOUdUAV1nyCid8Q9Kpv8Hv+5KhNpgstdgwvhxuHLlCi5duqSLc+fOYejQoaAq3IsogJJwsp5LZEzZ68WKwz7M+taLASv4M0azIb12Cvr26YWnT5+ivb1dF263G7t27YLRaAyECdASTNrjxSOXCuevAdxrV/HiZxVtPwew9KAXFbP5e2xD7uCj6JKdh5MnT8DpdKKtrS0e/L09e/aAegBhAkqp1MO3KnD/FsA3l/0YsFJB7TwZvZbKWHvMh0uPVfRYzPZwBUomOmG2V2PRwgUc+OXLlx0WwFdVSVd35r4fJ+76UTVHZu+Lp/2DIiL4vG6+HNYL6TWT0YdsePLkCScgEWGPegRw4D7LZLz8WWXvKTGLmPa1F8sO+bj8QeZ+70XTwhAbBh2BnWw4deokXC4XJ7h8+TKmTJmCO3fu8GvN/1gCuPzNKxX2fdR2hQU0UqLjd/x44FS5F556VPytBDBim8IVCbVhzuxZuHXrFm7evIlt27YhOzsbP/zwA7++fv06c//+/dgWNCyQcZ+SrT/howRcalTPlbn0wcc533nhov5oXa2wYM2GzLopyEi3obS0lKF9AWazGQUFBSgpKUFRUREzcuRItiSKAPYXa6jZ2n8JcDMGXxe/8r9llYK7bSr2X/ejfNYrCwjelAYdhjUtk6owGzt37sT27duZzZs3o6KiAvX19diyZQuOHj0acxVw0Hq62kM3/bwSvqWVsOSAFzvO+vDiJxVXn6rot1xbBTIYtqGdbVi8aCEtyZN4/PgxfvzxRxw5cgS0+7EYj8fDfRBLAMHBeekt2OfFxUcqHrpUXHumYu1xX8gSlMPIqJmI2ppqVFZWYurUqXj06BFaW1vRr18/fh57FYRtxVx2XpZUEV4N5Hnk5NpqGHgI2TkFmDBhAvLz8zFo0CB+3Ldvn7ZH6BWgiWAhIcQ4oNiGNrKhCksWL8LYsWORmJjITfc6O+Ebk149AU2N9ejVqxdsNhvq6upw4cIF/RXoMGyDj2MJkgkV5eXYu3cvunfvzmJu3LjBDUgiIgk49OYCNBsmtMGYVY5ZM2dw1585c4aXYUtLC29S4RWQTIHcgQfgmK1ygDfHSzaMR/OA/nxEUzJe+1VVVVi3bh2//p8AQTDcy6gcgaJRd1E89tGbM+4J7P024svsXLr609DOgGvXruHu3bvhFQiORTSaX0+1ZcvG9HzlNVGN6QUwZhSFUIxUWw6k1FQ+D7QZQTuIIvVAZ6rC50JKkp0m3FwiRyfZgiFpm2QtgqlkDkylC4iFMOaPgkG0YgBZQIdQ/HmgIzdtDBeEZIdo6qJYKrfA2nAElqodEGxV6NmzJ65evap1/RsKiCGC+ISE3DIVToSlejeEtBo01Ieve40wC95cgET2pSyW0qsgZTSipqYG586d5aGTkkSDh5ZVq1ZBkqS/3+A/pahVwSGIokLB0NzcjOnTp/NBFItx48ahsLDQT2P5Gg72ZlUQP6LH3SToKgW8TP+S4nGFOJ+SkjKJfvPRvxq8CCnBwq3aAAAAAElFTkSuQmCC'
 
     LANGUAGES = {
@@ -240,9 +241,14 @@ class Component(pyxmpp.jabberd.Component):
         reqsd.setProp("value", str(daily))
 
         reqsu = q.newChild(None, "stat", None)
-        reqsu.setProp("name", 'messages/users')
+        reqsu.setProp("name", 'users/active')
         reqsu.setProp("units", 'users')
         reqsu.setProp("value", str(users))
+
+        reqsa = q.newChild(None, "stat", None)
+        reqsa.setProp("name", 'users/total')
+        reqsa.setProp("units", 'users')
+        reqsa.setProp("value", str(len(self.jidseen)))
 
         self.stream.send(iq)
         return 1
@@ -256,6 +262,7 @@ class Component(pyxmpp.jabberd.Component):
         fromjid = iq.get_from().bare()
         tojid = iq.get_to().bare()
         feedname = iq.get_to().node
+        self.jidseen[fromjid] = 1
         print("Got message from " + str(fromjid) + ": " + body.encode("utf-8"))
         if fromjid not in self.msgstat:
             self.msgstat[fromjid] = list()
@@ -300,15 +307,31 @@ class Component(pyxmpp.jabberd.Component):
         m = Message(to_jid = tojid, from_jid = JID(str(fromjid) + "/gtt"), stanza_type = 'chat', body = msg)
         self.stream.send(m)
 
+    def mknode(self, disco_items, name, desc):
+        desc = name+" ("+desc+")"
+        newjid = JID(name, self.name)
+        item = DiscoItem(disco_items, newjid, name=desc, node=None)
+
     def browseitems(self, iq=None, node=None):
         disco_items = DiscoItems()
         fromjid = iq.get_from().bare()
         newjid = JID(domain=self.name)
         if node == None and iq.get_to().node == None:
             item = DiscoItem(disco_items, newjid, name="Languages list",  node="list")
+            item = DiscoItem(disco_items, newjid, name="From language",   node="from")
         if node == 'list':
             for fr in sorted(self.LANGUAGES):
                 item = DiscoItem(disco_items, newjid, name = self.LANGUAGES[fr].capitalize(), node = ' ')
+        if node == 'from':
+            item = DiscoItem(disco_items, newjid, name = "Auto", node = 'auto')
+            for fr in sorted(self.LANGUAGES):
+                item = DiscoItem(disco_items, newjid, name = self.LANGUAGES[fr].capitalize(), node = fr)
+        if node in self.LANGUAGES or node == 'auto':
+            for to in sorted(self.LANGUAGES):
+                if node == 'auto':
+                    self.mknode(disco_items, "auto2" + to, "Auto to " + self.LANGUAGES[to].capitalize())
+                elif node != to:
+                    self.mknode(disco_items, node + "2" + to, self.LANGUAGES[node].capitalize() + " to " + self.LANGUAGES[to].capitalize())
         return disco_items
 
     def pingpong(self, iq):
@@ -454,14 +477,16 @@ class Component(pyxmpp.jabberd.Component):
 
     def presence(self, stanza):
         feedname=stanza.get_to().node
+        to_jid = stanza.get_from()
         if feedname==None:
             return None
         if stanza.get_type()=="unavailable":
-            p=Presence(from_jid=stanza.get_to(),to_jid=stanza.get_from(),stanza_type="unavailable")
+            p=Presence(from_jid = stanza.get_to(), to_jid = to_jid, stanza_type="unavailable")
             self.stream.send(p)
         if (stanza.get_type() == "available" or stanza.get_type() == None) and self.checklang(feedname):
+            self.jidseen[to_jid] = 1
             p=Presence(from_jid=JID(stanza.get_to().as_unicode()+'/gtt'),
-                        to_jid=stanza.get_from(),
+                        to_jid = to_jid,
                         show=self.get_show(feedname),
                         status=self.get_status(feedname))
             self.stream.send(p)

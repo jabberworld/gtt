@@ -6,6 +6,5 @@
 
 	<tpr>3</tpr> <!-- messages per second -->
 	<tpd>1000000</tpd> <!-- messages per day -->
-
 </config>
 
