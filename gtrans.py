@@ -458,7 +458,7 @@ class Component(pyxmpp.jabberd.Component):
         transav.newTextChild(None, "TYPE", 'image/png')
 
         q.newTextChild(None,"BDAY","2022-12-07")
-        q.newTextChild(None,"URL","https://github.com/jabberworld/gtrans")
+        q.newTextChild(None,"URL","https://github.com/jabberworld/gtt")
 
         if iq.get_to() == self.name:
             q.newTextChild(None,"FN","Google Translate Transport")
