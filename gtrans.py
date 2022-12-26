@@ -24,7 +24,7 @@ from pyxmpp.jabber.disco import DiscoItems
 
 import pyxmpp.jabberd.all
 
-programmVersion="1.2"
+programmVersion="1.2.1"
 
 config=os.path.abspath(os.path.dirname(sys.argv[0]))+'/config.xml'
 
@@ -380,7 +380,6 @@ class Component(pyxmpp.jabberd.Component):
 #        if iq.get_from() == self.name:
 #            q.setProp("seconds", str(int(time.time()) - self.start_time))
 #        else:
-        print(self.lastmsg)
         q.setProp("seconds", str(int(time.time() - self.lastmsg)))
         self.stream.send(iq)
         return 1
@@ -496,7 +495,7 @@ class Component(pyxmpp.jabberd.Component):
         iq=iq.make_result_response()
         q=iq.new_query("jabber:iq:version")
         q.newTextChild(q.ns(), "name", "Google Translate Transport")
-        q.newTextChild(q.ns(), "version", programmVersion)
+        q.newTextChild(q.ns(), "version", programmVersion + " (" + str(len(self.LANGUAGES)) + " languages)")
         q.newTextChild(q.ns(), "os", "Python "+sys.version.split()[0]+" + PyXMPP")
         self.stream.send(iq)
         return 1
