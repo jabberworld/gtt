@@ -1,10 +1,11 @@
 <config>
-	<name>gtrans.linuxoid.in</name> <!-- Transport name -->
-	<host>127.0.0.1</host> <!-- Jabber server address -->
-	<port>5555</port> <!-- Jabber server port -->
-	<password>superpassword</password> <!-- Transport password -->
+    <name>gtrans.linuxoid.in</name> <!-- Transport name -->
+    <host>127.0.0.1</host> <!-- Jabber server address -->
+    <port>5555</port> <!-- Jabber server port -->
+    <password>superpassword</password> <!-- Transport password -->
 
-	<tpr>3</tpr> <!-- messages per second -->
-	<tpd>1000000</tpd> <!-- messages per day -->
+    <tpr>3</tpr> <!-- messages per second -->
+    <tpd>1000000</tpd> <!-- messages per day -->
+    <debug>0</debug> <!-- print messages and jids list to log -->
 </config>
 
