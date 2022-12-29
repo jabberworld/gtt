@@ -24,7 +24,7 @@ from pyxmpp.jabber.disco import DiscoItems
 
 import pyxmpp.jabberd.all
 
-programmVersion="1.2.2"
+programmVersion="1.2.3"
 
 config=os.path.abspath(os.path.dirname(sys.argv[0]))+'/config.xml'
 
@@ -517,11 +517,11 @@ class Component(pyxmpp.jabberd.Component):
             p=Presence(from_jid = stanza.get_to(), to_jid = to_jid, stanza_type="unavailable")
             self.stream.send(p)
         if (stanza.get_type() == "available" or stanza.get_type() == None) and self.checklang(feedname):
-            self.jidseen[to_jid] = 1
-            p=Presence(from_jid=JID(stanza.get_to().as_unicode()+'/gtt'),
+            self.jidseen[to_jid.bare()] = 1
+            p=Presence(from_jid = JID(stanza.get_to().as_unicode() + '/gtt'),
                         to_jid = to_jid,
-                        show=self.get_show(feedname),
-                        status=self.get_status(feedname))
+                        show = self.get_show(feedname),
+                        status = self.get_status(feedname))
             self.stream.send(p)
 
     def get_show(self, feedname):
