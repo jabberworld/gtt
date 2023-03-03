@@ -24,7 +24,7 @@ from pyxmpp.jabber.disco import DiscoItems
 
 import pyxmpp.jabberd.all
 
-programmVersion="1.2.3"
+programmVersion="1.2.4"
 
 config=os.path.abspath(os.path.dirname(sys.argv[0]))+'/config.xml'
 
@@ -208,6 +208,7 @@ class Component(pyxmpp.jabberd.Component):
         except:
             return "Translation error"
 
+# check if languages from node in JID match languages list
     def checklang(self, node):
         regcheck = "(" + "|".join(self.LANGUAGES) + "|auto)2(" + "|".join(self.LANGUAGES) + ")"
         if re.match(regcheck, node):
@@ -252,14 +253,18 @@ class Component(pyxmpp.jabberd.Component):
         upt.setProp("value", str(int(time.time()) - self.start_time))
 
         ts = time.time()
-        hourly = daily = users = 0
-        for i in self.msgstat:
-            users += 1
-            for j in self.msgstat[i]:
-                if j > ts - 86400:
+        hourly = daily = users = active = 0
+        for jid in self.msgstat:
+            active += 1
+            for stamp in self.msgstat[jid]:
+                if stamp > ts - 86400:
                     daily += 1
-                    if j > ts - 3600:
+                    if stamp > ts - 3600:
                         hourly += 1
+                else:
+                     self.msgstat[jid].remove(stamp)
+            if len(self.msgstat[jid]) > 0:
+                users += 1
 
         reqsh = q.newChild(None, "stat", None)
         reqsh.setProp("name", 'messages/hourly')
@@ -272,14 +277,19 @@ class Component(pyxmpp.jabberd.Component):
         reqsd.setProp("value", str(daily))
 
         reqsu = q.newChild(None, "stat", None)
-        reqsu.setProp("name", 'users/active')
+        reqsu.setProp("name", 'users/daily')
         reqsu.setProp("units", 'users')
         reqsu.setProp("value", str(users))
 
         reqsa = q.newChild(None, "stat", None)
-        reqsa.setProp("name", 'users/total')
+        reqsa.setProp("name", 'users/active')
         reqsa.setProp("units", 'users')
-        reqsa.setProp("value", str(len(self.jidseen)))
+        reqsa.setProp("value", str(active))
+
+        reqst = q.newChild(None, "stat", None)
+        reqst.setProp("name", 'users/total')
+        reqst.setProp("units", 'users')
+        reqst.setProp("value", str(len(self.jidseen)))
 
         self.stream.send(iq)
         return 1
@@ -292,7 +302,7 @@ class Component(pyxmpp.jabberd.Component):
         body = body.strip()
         fromjid = iq.get_from().bare()
         tojid = iq.get_to().bare()
-        feedname = iq.get_to().node
+        direction = iq.get_to().node
         self.jidseen[fromjid] = 1
         if self.debug == 1:
             print("Got message from " + str(fromjid) + ": " + body.encode("utf-8"))
@@ -322,12 +332,12 @@ class Component(pyxmpp.jabberd.Component):
             self.sendmsg(tojid, fromjid, 'Daily limit reached, try later')
         else:
             self.msgstat[fromjid].append(time.time())
-            if self.checklang(feedname) and len(body) < 8192:
-                feedsplit = feedname.split(str(2))
+            if self.checklang(direction) and len(body) < 8192:
+                dirsplit = direction.split(str(2))
                 while self.lastmsg > time.time() - self.tpr:
                     time.sleep(0.1)
                 self.lastmsg = time.time()
-                self.sendmsg(tojid, fromjid, self.trans(feedsplit[0], feedsplit[1], body))
+                self.sendmsg(tojid, fromjid, self.trans(dirsplit[0], dirsplit[1], body))
             else:
                 print("Wrong language or message too long")
 
@@ -385,10 +395,10 @@ class Component(pyxmpp.jabberd.Component):
     def get_last(self, iq):
         iq = iq.make_result_response()
         q = iq.new_query("jabber:iq:last")
-#        if iq.get_from() == self.name:
-#            q.setProp("seconds", str(int(time.time()) - self.start_time))
-#        else:
-        q.setProp("seconds", str(int(time.time() - self.lastmsg)))
+        if iq.get_from() == self.name:
+            q.setProp("seconds", str(int(time.time()) - self.start_time))
+        else:
+            q.setProp("seconds", str(int(time.time() - self.lastmsg)))
         self.stream.send(iq)
         return 1
 
@@ -509,34 +519,34 @@ class Component(pyxmpp.jabberd.Component):
         return 1
 
     def presence(self, stanza):
-        feedname=stanza.get_to().node
+        direction=stanza.get_to().node
         to_jid = stanza.get_from()
-        if feedname==None:
+        if direction==None:
             return None
         if stanza.get_type()=="unavailable":
             p=Presence(from_jid = stanza.get_to(), to_jid = to_jid, stanza_type="unavailable")
             self.stream.send(p)
-        if (stanza.get_type() == "available" or stanza.get_type() == None) and self.checklang(feedname):
+        if (stanza.get_type() == "available" or stanza.get_type() == None) and self.checklang(direction):
             self.jidseen[to_jid.bare()] = 1
             p=Presence(from_jid = JID(stanza.get_to().as_unicode() + '/gtt'),
                         to_jid = to_jid,
-                        show = self.get_show(feedname),
-                        status = self.get_status(feedname))
+                        show = self.get_show(direction),
+                        status = self.get_status(direction))
             self.stream.send(p)
 
-    def get_show(self, feedname):
+    def get_show(self, direction):
         st = None
         return st
 
-    def get_status(self, feedname):
-        status = 'Lets translate to ' + self.LANGUAGES[feedname.split(str(2))[1]].capitalize()
+    def get_status(self, direction):
+        status = 'Lets translate to ' + self.LANGUAGES[direction.split(str(2))[1]].capitalize()
         return status
 
     def presence_control(self, stanza):
-        feedname = stanza.get_to().node
+        direction = stanza.get_to().node
         fromjid = stanza.get_from().bare()
         print("Got "+str(stanza.get_type())+" request from "+str(fromjid)+" to"),
-        print(feedname)
+        print(direction)
         if stanza.get_type()=="subscribe":
             p=Presence(stanza_type="subscribe",
                 to_jid=fromjid,
