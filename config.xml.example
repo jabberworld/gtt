@@ -4,7 +4,7 @@
     <port>5555</port> <!-- Jabber server port -->
     <password>superpassword</password> <!-- Transport password -->
 
-    <tpr>3</tpr> <!-- messages per second -->
+    <tpr>3</tpr> <!-- messages timeout -->
     <tpd>1000000</tpd> <!-- messages per day -->
     <debug>0</debug> <!-- print messages and jids list to log -->
 </config>
