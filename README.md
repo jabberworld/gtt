@@ -1,18 +1,20 @@
 # Google Translate Transport
 
-Сервис для Jabber (XMPP), позволяющий создавать ботов, переводящих отправленный текст через Google Translate.
+A service for Jabber (XMPP) that allows you to create bots that translate sent text via Google Translate.
 
-## Требования
+## Requiremends
 
 * python2.7
 * python-pyxmpp
 
-## Установка
+## Installation
 
-* Разместить файлы транспорта в любом удобном каталоге.
-* Добавить в конфиг-файл Jabber-сервера описание транспорта. На примере ejabberd:
+* Put files of transport into any directory.
+* Add service definition into your jabber server config file.
 
-Старый формат:
+For ejabberd:
+
+Old format:
 ```
      {5555, ejabberd_service, [
                               {ip, {127.0.0.1}},
@@ -21,7 +23,7 @@
                               {host, "gtrans.domain.com", [{password, "superpassword"}]}
                               ]},
 ```
- Новый формат:
+New format:
 ```
     -
       port: 5555
@@ -34,35 +36,46 @@
       shaper_rule: fast
 ```
 
-* В файле config.xml транспорта прописать используемые параметры подключения к Jabber-серверу (название транспорта, IP, порт, пароль), опционально - установить лимиты на число сообщений в сутки.
-* Тем или иным способом запустить gtrans.py (в идеале от отдельного пользователя) - можно в GNU screen или с помощью идущего в комплекте gtrans.service-файла для systemd. Последний можно разместить в ~/.config/systemd/user/gtrans.service, далее выполнить:
+And for Prosody:
+```
+component_ports = 5555
+Component "rss.example.com"
+        component_secret = 'superpassword'
+```
+
+* Write into config file config.xml all required credentials to connect to Jabber server (transport name, IP, port, password), optionally - set messages limit per day.
+* Run somehow gtrans.py (preferably from dedicated user) - you can use GNU screen or included gtrans.service for systemd. Last one you can put into ~/.config/systemd/user/gtrans.service, then run:
 ```
     systemctl --user enable gtrans.service
     systemctl --user start gtrans.service
 ```
-* Для автостарта пользовательского service-файла использовать команду:
+* And use following command to start user's service file:
 ```
     # loginctl enable-linger username
 ```
-* ...либо все то же самое, но глобально, разместив service-файл в /etc/systemd/system, а в gtrans.service указать нужные имя и группу пользователя.
+* ...or all the same, but globally: put service file into /etc/systemd/system, and in gtrans.service write required home directory, username and group, then run:
+```
+    # systemctl enable gtrans.service
+    # systemctl start  gtrans.service
+```
 
-## Использование
+## Usage
 
-Транспорт создает ботов с JID'ами вида с_языка2на_язык@gtrans.domain.com - например, en2ru@gtrans.domain.com для перевода с английского на русский. Если вы уже знаете JID нужного вам бота - можно просто добавить его в список контактов и авторизовать.
+Service is creating bots with JID's like from_lang2to_lang@gtrans.domain.com - for example, en2ru@gtrans.domain.com for translations from english to russian. If you already know JID of reqired bot - just add it into your contact list and authorize.
 
-Также доступна функция добавления бота через пункт "Регистрация" в браузере сервисов - там можно выбрать исходный язык, язык назначения, после чего нужный контакт будет добавлен.
+Also you can add bots via "Registration" from context menu of transport in "Service discovery" - you can choose source language, target language and then bot will be added into contact list.
 
-Плюс полный список (с возможностью добавления контакта) доступен в браузере сервисов напрямую.
+Additionally, you can see full list of bots in "Service discovery".
 
-После добавления отправьте боту текст и он вернет ответ на нужном языке.
+After adding, send the text to the bot and it will return a response in the desired language.
 
-Если есть проблема с коммуникацией с серверами гугла - он вернет "Translation error"
+If service can't communicate with Google servers - you will get "Translation error"
 
-Если сообщения шлются сильно часто (чаще установленного в конфиг-файле параметра tpr) - бот вернет "Too fast! Wait a moment..."
+If you sending messages too often (above limit "tpr" in service's config file) - bot will return "Too fast! Wait a moment..."
 
-Если число сообщений от всех пользователей превышает установленный в конфиг-файле лимит tpd - бот вернет "Daily limit reached, try later"
+If messages count from all users of service is above "tpd" in service's config file - bot will return "Daily limit reached, try later"
 
-Лимит на размер сообщения установлен в 8 КБ.
+Maximum message limit is set to 8 KB.
 
 ----
 
