@@ -2,7 +2,7 @@
 
 A service for Jabber (XMPP) that allows you to create bots that translate sent text via Google Translate.
 
-## Requiremends
+## Requirements
 
 * python2.7
 * python-pyxmpp
