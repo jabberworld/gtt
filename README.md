@@ -44,16 +44,7 @@ Component "rss.example.com"
 ```
 
 * Write into config file config.xml all required credentials to connect to Jabber server (transport name, IP, port, password), optionally - set messages limit per day.
-* Run somehow gtrans.py (preferably from dedicated user) - you can use GNU screen or included gtrans.service for systemd. Last one you can put into ~/.config/systemd/user/gtrans.service, then run:
-```
-    systemctl --user enable gtrans.service
-    systemctl --user start gtrans.service
-```
-* And use following command to start user's service file:
-```
-    # loginctl enable-linger username
-```
-* ...or all the same, but globally: put service file into /etc/systemd/system, and in gtrans.service write required home directory, username and group, then run:
+* Run somehow gtrans.py - preferably from dedicated user. For example, you can use GNU screen or included gtrans.service for systemd - you can put it into /etc/systemd/system, and write to it required home directory (with a path to service's files), username and group, then run:
 ```
     # systemctl enable gtrans.service
     # systemctl start  gtrans.service
@@ -61,7 +52,7 @@ Component "rss.example.com"
 
 ## Usage
 
-Service is creating bots with JID's like from_lang2to_lang@gtrans.domain.com - for example, en2ru@gtrans.domain.com for translations from english to russian. If you already know JID of reqired bot - just add it into your contact list and authorize.
+Service is creating bots with JIDs like from_lang2to_lang@gtrans.domain.com - for example, en2ru@gtrans.domain.com for translations from english to russian. If you already know JID of reqired bot - just add it into your contact list and authorize.
 
 Also you can add bots via "Registration" from context menu of transport in "Service discovery" - you can choose source language, target language and then bot will be added into contact list.
 
