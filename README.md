@@ -36,10 +36,10 @@ New format:
       shaper_rule: fast
 ```
 
-And for Prosody:
+Or for Prosody:
 ```
 component_ports = 5555
-Component "rss.example.com"
+Component "gtrans.domain.com"
         component_secret = 'superpassword'
 ```
 
