@@ -475,17 +475,17 @@ class Component(pyxmpp.jabberd.Component):
             item = DiscoItem(disco_items, newjid, name="From language",   node="from")
         if node == 'list':
             for fr in sorted(self.LANGUAGES):
-                item = DiscoItem(disco_items, newjid, name = self.LANGUAGES[fr].capitalize(), node = ' ')
+                item = DiscoItem(disco_items, newjid, name = unicode(self.LANGUAGES[fr].capitalize(), 'utf-8'), node = ' ')
         if node == 'from':
             item = DiscoItem(disco_items, newjid, name = "Auto", node = 'auto')
             for fr in sorted(self.LANGUAGES):
-                item = DiscoItem(disco_items, newjid, name = self.LANGUAGES[fr].capitalize(), node = fr)
+                item = DiscoItem(disco_items, newjid, name = unicode(self.LANGUAGES[fr].capitalize(), 'utf-8'), node = fr)
         if node in self.LANGUAGES or node == 'auto':
             for to in sorted(self.LANGUAGES):
                 if node == 'auto':
-                    self.mknode(disco_items, "auto2" + to, "Auto to " + self.LANGUAGES[to].capitalize())
+                    self.mknode(disco_items, "auto2" + to, "Auto to " + unicode(self.LANGUAGES[to].capitalize(), 'utf-8'))
                 elif node != to:
-                    self.mknode(disco_items, node + "2" + to, self.LANGUAGES[node].capitalize() + " to " + self.LANGUAGES[to].capitalize())
+                    self.mknode(disco_items, node + "2" + to, unicode(self.LANGUAGES[node].capitalize(), 'utf-8') + " to " + unicode(self.LANGUAGES[to].capitalize(), 'utf-8'))
         return disco_items
 
     def pingpong(self, iq):
